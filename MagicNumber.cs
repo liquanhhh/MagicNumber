@@ -170,7 +170,7 @@ class MagicContext
                 }
 
                 index++;
-                if(index % 1000000 == 0) {
+                if(index % 100000 == 0) {
                     Console.WriteLine("{0}, {1}, {2}, {3}", index, value, pq.Count(), seedValues.Count);
                 }
                 seedValues.Enqueue(value);
