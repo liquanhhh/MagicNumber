@@ -9,8 +9,8 @@ namespace C_
             // MagicNumberTest.Test();
             var start = DateTime.Now;
             var context = new MagicContext();
-            var n = 1000000;
-            var result = context.find(n);
+            var n = 10000000;
+            var result = context.Find(n);
             Console.WriteLine("{0}th number is: {1}", n, result);
             var end = DateTime.Now;
 

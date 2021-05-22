@@ -8,7 +8,7 @@ using System.Text;
 // Use this as the number
 class MagicNumber : IComparable<MagicNumber>
 {
-    List<long> data = new List<long>();
+    public List<long> data = new List<long>();
     static readonly long STEP = 100000000000000000;
     static readonly int LENGTH = 17;
     public MagicNumber clone()
@@ -160,7 +160,7 @@ class MagicContext
             return new MagicNumber(0);
     }
 
-    public MagicNumber find(int n)
+    public MagicNumber Find(int n)
     {
         int printStep = n / 10;
         if (n < 3) return new MagicNumber(n);
@@ -189,7 +189,7 @@ class MagicContext
                 index++;
                 if (index % printStep == 0)
                 {
-                    // Console.WriteLine("{0}, {1}, {2}, {3}", index, value, pq.Count(), seedValues.Count);
+                    Console.WriteLine("{0}, {1}, {2}, {3} {4}", index, value, pq.Count(), seedValues.Count, value.data.Count);
                 }
                 seedValues.Enqueue(value);
                 currentValue = value;
@@ -205,6 +205,7 @@ class MagicContext
             }
         }
 
+        Console.WriteLine("Seeds: {0}", pq.Count() + seedValues.Count);
         return result;
     }
 }
