@@ -79,28 +79,6 @@ class MagicNumber : IComparable<MagicNumber>
         return compare > -1;
     }
 
-    public static MagicNumber operator +(MagicNumber a, MagicNumber b)
-    {
-        if (a.data.Count < b.data.Count)
-        {
-            var tmp = a;
-            a = b;
-            b = a;
-        }
-        var result = a.clone();
-
-        for (var i = 0; i < a.data.Count; i++)
-        {
-
-        }
-
-        return result;
-    }
-
-    public static MagicNumber operator *(MagicNumber a, MagicNumber b)
-    {
-        return a;
-    }
 
     public override String ToString()
     {
@@ -110,13 +88,6 @@ class MagicNumber : IComparable<MagicNumber>
         for (var i = 0; i < this.data.Count; i++)
         {
             long c = (long)this.data[i] + carry;
-
-            // var tmp = c % STEP;
-            // while (tmp > 0)
-            // {
-            //     sb.Append(tmp % 10);
-            //     tmp = tmp / 10;
-            // }
 
             var seg = c.ToString();
             var prefix = LENGTH - seg.Length;
@@ -131,7 +102,7 @@ class MagicNumber : IComparable<MagicNumber>
         tmp.Reverse();
         tmp.ForEach((item) => sb.Append(item));
 
-        return sb.ToString();
+        return sb.ToString().TrimStart('0');
     }
 
     int IComparable<MagicNumber>.CompareTo(MagicNumber number)
@@ -179,8 +150,6 @@ class MagicContext
     public MagicContext()
     {
         pq.Enqueue(new MagicSeedWorker(new MagicNumber(1), this));
-        pq.Enqueue(new MagicSeedWorker(new MagicNumber(2), this));
-        pq.Enqueue(new MagicSeedWorker(new MagicNumber(3), this));
     }
 
     public MagicNumber getNextValue()
@@ -191,7 +160,7 @@ class MagicContext
             return new MagicNumber(0);
     }
 
-    public MagicNumber match(int n)
+    public MagicNumber find(int n)
     {
         int printStep = n / 10;
         if (n < 3) return new MagicNumber(n);
@@ -220,7 +189,7 @@ class MagicContext
                 index++;
                 if (index % printStep == 0)
                 {
-                    Console.WriteLine("{0}, {1}, {2}, {3}", index, value, pq.Count(), seedValues.Count);
+                    // Console.WriteLine("{0}, {1}, {2}, {3}", index, value, pq.Count(), seedValues.Count);
                 }
                 seedValues.Enqueue(value);
                 currentValue = value;
