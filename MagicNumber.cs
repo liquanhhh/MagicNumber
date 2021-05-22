@@ -159,7 +159,7 @@ class MagicContext
 
     public MagicNumber Find(int n)
     {
-        int printStep = 1;
+        int printStep = n/10;
         if (n < 3) return new MagicNumber(n);
 
         int index = 1;
@@ -184,7 +184,7 @@ class MagicContext
             result = minValue;
 
             if(printCounter++ == printStep) {
-                printCounter = 1;
+                printCounter = 0;
                 Console.WriteLine("{0} {1} {2} {3} {4}",index, minValue, this.waitingList[0].Count, this.waitingList[1].Count, this.waitingList[2].Count);
             }
         }

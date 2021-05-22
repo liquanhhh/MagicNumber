@@ -9,7 +9,7 @@ namespace C_
             // MagicNumberTest.Test();
             var start = DateTime.Now;
             var context = new MagicContext();
-            var n = 150;
+            var n = 15000000;
             var result = context.Find(n);
             Console.WriteLine("{0}th number is: {1}", n, result);
             var end = DateTime.Now;
