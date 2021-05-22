@@ -162,7 +162,7 @@ class MagicContext
         int printStep = 1;
         if (n < 3) return new MagicNumber(n);
 
-        int index = 0;
+        int index = 1;
         MagicNumber result = null;
         int printCounter = 1;
 
