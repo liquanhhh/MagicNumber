@@ -8,7 +8,9 @@ using System.Text;
 // Use this as the number
 class MagicNumber : IComparable<MagicNumber>
 {
-    List<int> data = new List<int>();
+    List<long> data = new List<long>();
+    static readonly long STEP = 100000000000000000;
+    static readonly int LENGTH = 17;
     public MagicNumber clone()
     {
         var number = new MagicNumber();
@@ -21,7 +23,7 @@ class MagicNumber : IComparable<MagicNumber>
     {
 
     }
-    public MagicNumber(int value)
+    public MagicNumber(long value)
     {
         this.data.Add(value);
     }
@@ -31,15 +33,16 @@ class MagicNumber : IComparable<MagicNumber>
         var number1 = new MagicNumber();
 
         var length = magic.data.Count;
-        var carry = 0;
+        long carry = 0;
         for (var i = 0; i < length; i++)
         {
             var c = magic.data[i] * number + carry;
-            number1.data.Add(c % 10);
-            carry = c / 10;
+            number1.data.Add(c % STEP);
+            carry = c / STEP;
         }
 
-        if(carry > 0) {
+        if (carry > 0)
+        {
             number1.data.Add(carry);
         }
 
@@ -76,14 +79,58 @@ class MagicNumber : IComparable<MagicNumber>
         return compare > -1;
     }
 
+    public static MagicNumber operator +(MagicNumber a, MagicNumber b)
+    {
+        if (a.data.Count < b.data.Count)
+        {
+            var tmp = a;
+            a = b;
+            b = a;
+        }
+        var result = a.clone();
+
+        for (var i = 0; i < a.data.Count; i++)
+        {
+
+        }
+
+        return result;
+    }
+
+    public static MagicNumber operator *(MagicNumber a, MagicNumber b)
+    {
+        return a;
+    }
 
     public override String ToString()
     {
         StringBuilder sb = new StringBuilder();
-        for (var i = this.data.Count - 1; i >= 0; i--)
+        List<String> tmp = new List<String>();
+        var carry = 0;
+        for (var i = 0; i < this.data.Count; i++)
         {
-            sb.Append(this.data[i]);
+            long c = (long)this.data[i] + carry;
+
+            // var tmp = c % STEP;
+            // while (tmp > 0)
+            // {
+            //     sb.Append(tmp % 10);
+            //     tmp = tmp / 10;
+            // }
+
+            var seg = c.ToString();
+            var prefix = LENGTH - seg.Length;
+            while(prefix-- > 0) {
+                seg = "0" + seg;
+            }
+
+            tmp.Add(seg);
+            carry = (int)(c / STEP);
         }
+
+        tmp.Reverse();
+        tmp.ForEach((item) => sb.Append(item));
+
         return sb.ToString();
     }
 
@@ -94,7 +141,7 @@ class MagicNumber : IComparable<MagicNumber>
 
     public int Compare(MagicNumber number)
     {
-        if(number == null) return 0;
+        if (number == null) return 0;
 
         if (this.data.Count == number.data.Count)
         {
@@ -106,7 +153,7 @@ class MagicNumber : IComparable<MagicNumber>
                 }
                 else
                 {
-                    return this.data[i] - number.data[i];
+                    return this.data[i] < number.data[i] ? -1 : 1;
                 }
             }
             return 0;
@@ -146,6 +193,7 @@ class MagicContext
 
     public MagicNumber match(int n)
     {
+        int printStep = n / 10;
         if (n < 3) return new MagicNumber(n);
 
         int index = 1;
@@ -170,7 +218,8 @@ class MagicContext
                 }
 
                 index++;
-                if(index % 100000 == 0) {
+                if (index % printStep == 0)
+                {
                     Console.WriteLine("{0}, {1}, {2}, {3}", index, value, pq.Count(), seedValues.Count);
                 }
                 seedValues.Enqueue(value);
@@ -221,7 +270,9 @@ class MagicSeedWorker : IComparable<MagicSeedWorker>
                 seedIndex = 0;
                 this.value = context.getNextValue();
                 this.currentValue = this.value * NUMBER[this.seedIndex];
-            } else {
+            }
+            else
+            {
                 this.currentValue = this.value * NUMBER[this.seedIndex];
             }
         }
