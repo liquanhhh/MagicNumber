@@ -91,7 +91,8 @@ class MagicNumber : IComparable<MagicNumber>
 
             var seg = c.ToString();
             var prefix = LENGTH - seg.Length;
-            while(prefix-- > 0) {
+            while (prefix-- > 0)
+            {
                 seg = "0" + seg;
             }
 
@@ -141,88 +142,79 @@ class MagicNumber : IComparable<MagicNumber>
 
 class MagicContext
 {
-    Queue<MagicNumber> seedValues = new Queue<MagicNumber>();
 
-    // Use priority Queue to manage next posibile value
-    PriorityQueue<MagicSeedWorker> pq = new PriorityQueue<MagicSeedWorker>();
+    List<MagicWaitingList> waitingList = new List<MagicWaitingList>(3);
 
     MagicNumber currentValue = new MagicNumber(1);
     public MagicContext()
     {
-        pq.Enqueue(new MagicSeedWorker(new MagicNumber(1), this));
+        this.waitingList.Add(new MagicWaitingList(0, this));
+        this.waitingList.Add(new MagicWaitingList(1, this));
+        this.waitingList.Add(new MagicWaitingList(2, this));
+
+
+        this.addWorker(new MagicSeedWorker(new MagicNumber(1), this));
     }
 
-    public MagicNumber getNextValue()
-    {
-        if (seedValues.Count > 0)
-            return seedValues.Dequeue();
-        else
-            return new MagicNumber(0);
-    }
 
     public MagicNumber Find(int n)
     {
-        int printStep = n / 10;
+        int printStep = 1;
         if (n < 3) return new MagicNumber(n);
 
-        int index = 1;
+        int index = 0;
         MagicNumber result = null;
-        MagicNumber maxValueInQueue;
+        int printCounter = 1;
 
         while (index < n)
         {
-            MagicSeedWorker worker = pq.Dequeue();
+            var value1 = this.waitingList[0].value;
+            var value2 = this.waitingList[1].value;
+            var value3 = this.waitingList[2].value;
 
-            MagicNumber value = worker.currentValue;
+            var minValue = value1 <= value2 ? value1 : value2;
+            minValue = minValue <= value3 ? minValue : value3;
 
-            if (value > currentValue)
-            {
-                // check current max value is bigger than seedValues * 2, put that seed in the pq
-                if (seedValues.Count > 0 && seedValues.Peek() * 2 < value)
-                {
-                    var peek = seedValues.Dequeue();
-                    pq.Enqueue(new MagicSeedWorker(peek, this));
-                    pq.Enqueue(worker);
-                    continue;
-                }
+            this.waitingList[0].markUsed(minValue);
+            this.waitingList[1].markUsed(minValue);
+            this.waitingList[2].markUsed(minValue);
 
-                index++;
-                if (index % printStep == 0)
-                {
-                    Console.WriteLine("{0}, {1}, {2}, {3} {4}", index, value, pq.Count(), seedValues.Count, value.data.Count);
-                }
-                seedValues.Enqueue(value);
-                currentValue = value;
-            }
+            this.addWorker(new MagicSeedWorker(minValue, this));
+            index++;
+            result = minValue;
 
-            worker.markUsed(value);
-            maxValueInQueue = value;
-            result = value;
-
-            if (!worker.currentValue.isZero())
-            {
-                pq.Enqueue(worker);
+            if(printCounter++ == printStep) {
+                printCounter = 1;
+                Console.WriteLine("{0} {1} {2} {3} {4}",index, minValue, this.waitingList[0].Count, this.waitingList[1].Count, this.waitingList[2].Count);
             }
         }
 
-        Console.WriteLine("Seeds: {0}", pq.Count() + seedValues.Count);
         return result;
     }
+
+    public void addWorker(MagicSeedWorker worker)
+    {
+        if (worker.index < 3 && worker.index >= 0)
+        {
+            this.waitingList[worker.index].AddLast(worker);
+        }
+    }
+
 }
 
 class MagicSeedWorker : IComparable<MagicSeedWorker>
 {
     static int[] NUMBER = new int[] { 2, 3, 5 };
-    public MagicNumber value;
+    public MagicNumber seedValue;
     MagicContext context;
 
     int seedIndex = 0;
 
     public MagicSeedWorker(MagicNumber v, MagicContext context)
     {
-        this.value = v;
+        this.seedValue = v;
         this.context = context;
-        this.currentValue = this.value * NUMBER[this.seedIndex];
+        this.currentValue = this.seedValue * NUMBER[this.seedIndex];
     }
 
     public MagicNumber currentValue;
@@ -235,15 +227,9 @@ class MagicSeedWorker : IComparable<MagicSeedWorker>
             // increase the index
             this.seedIndex++;
 
-            if (this.seedIndex >= 3)
+            if (this.seedIndex < 3)
             {
-                seedIndex = 0;
-                this.value = context.getNextValue();
-                this.currentValue = this.value * NUMBER[this.seedIndex];
-            }
-            else
-            {
-                this.currentValue = this.value * NUMBER[this.seedIndex];
+                this.currentValue = this.seedValue * NUMBER[this.seedIndex];
             }
         }
     }
@@ -253,6 +239,63 @@ class MagicSeedWorker : IComparable<MagicSeedWorker>
         return this.currentValue < worker.currentValue ? -1 : 1;
     }
 
+    public int index
+    {
+        get
+        {
+            return seedIndex;
+        }
+    }
+
+}
+
+
+class MagicWaitingList : LinkedList<MagicSeedWorker>
+{
+
+    int channel;
+    MagicContext context;
+
+    public MagicWaitingList(int channel, MagicContext context)
+    {
+        this.channel = channel;
+        this.context = context;
+    }
+
+    public MagicNumber value
+    {
+        get
+        {
+            if (this.Count > 0)
+            {
+                return this.First.Value.currentValue;
+            }
+            else
+            {
+                return null;
+            }
+        }
+    }
+
+    public void markUsed(MagicNumber lastValue)
+    {
+        if (this.Count > 0)
+        {
+            var worker = this.First.Value;
+
+            worker.markUsed(lastValue);
+
+            if (worker.index != this.channel)
+            {
+                this.RemoveFirst();
+
+                if (worker.index < 3)
+                {
+                    this.context.addWorker(worker);
+                }
+            }
+        }
+    }
 }
 
 
