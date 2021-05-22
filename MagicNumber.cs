@@ -123,7 +123,7 @@ class MagicNumber : IComparable<MagicNumber>
 
 class MagicContext
 {
-    PriorityQueue<MagicSeedWorker> seedValues = new PriorityQueue<MagicSeedWorker>();
+    Queue<MagicNumber> seedValues = new Queue<MagicNumber>();
 
     // Use priority Queue to manage next posibile value
     PriorityQueue<MagicSeedWorker> pq = new PriorityQueue<MagicSeedWorker>();
@@ -136,12 +136,12 @@ class MagicContext
         pq.Enqueue(new MagicSeedWorker(new MagicNumber(3), this));
     }
 
-    public MagicSeedWorker getNextValue()
+    public MagicNumber getNextValue()
     {
-        if (seedValues.Count() > 0)
+        if (seedValues.Count > 0)
             return seedValues.Dequeue();
         else
-            return null;
+            return new MagicNumber(0);
     }
 
     public MagicNumber match(int n)
@@ -161,19 +161,19 @@ class MagicContext
             if (value > currentValue)
             {
                 // check current max value is bigger than seedValues * 2, put that seed in the pq
-                if (seedValues.Count() > 0 && seedValues.Peek().currentValue < value)
+                if (seedValues.Count > 0 && seedValues.Peek() * 2 < value)
                 {
                     var peek = seedValues.Dequeue();
-                    pq.Enqueue(peek);
+                    pq.Enqueue(new MagicSeedWorker(peek, this));
                     pq.Enqueue(worker);
                     continue;
                 }
 
                 index++;
                 if(index % 1000000 == 0) {
-                    Console.WriteLine("{0}, {1}, {2}, {3}", index, value, pq.Count(), seedValues.Count());
+                    Console.WriteLine("{0}, {1}, {2}, {3}", index, value, pq.Count(), seedValues.Count);
                 }
-                seedValues.Enqueue(new MagicSeedWorker(value, this));
+                seedValues.Enqueue(value);
                 currentValue = value;
             }
 
@@ -183,7 +183,7 @@ class MagicContext
 
             if (!worker.currentValue.isZero())
             {
-                seedValues.Enqueue(worker);
+                pq.Enqueue(worker);
             }
         }
 
@@ -194,7 +194,6 @@ class MagicContext
 class MagicSeedWorker : IComparable<MagicSeedWorker>
 {
     static int[] NUMBER = new int[] { 2, 3, 5 };
-    static readonly MagicNumber zero = new MagicNumber(0);
     public MagicNumber value;
     MagicContext context;
 
@@ -220,8 +219,8 @@ class MagicSeedWorker : IComparable<MagicSeedWorker>
             if (this.seedIndex >= 3)
             {
                 seedIndex = 0;
-                this.value = zero;
-                this.currentValue = zero;
+                this.value = context.getNextValue();
+                this.currentValue = this.value * NUMBER[this.seedIndex];
             } else {
                 this.currentValue = this.value * NUMBER[this.seedIndex];
             }
